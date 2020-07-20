@@ -4,6 +4,12 @@ RNN based Time-series Anomaly detector model implemented in Pytorch.
 This is an implementation of RNN based time-series anomaly detector, which consists of two-stage strategy of time-series prediction and anomaly score calculation.
 
 
+```
+python .\0_download_dataset.py
+python .\1_train_predictor.py --data pump --filename sensor.pkl
+```
+
+
 ## Requirements
 * Ubuntu 16.04+ (Errors reported on Windows 10. see [issue](https://github.com/chickenbestlover/RNN-Time-series-Anomaly-Detection/issues/6#issue-358550020). Suggesstions are welcomed.)
 * Python 3.5+
