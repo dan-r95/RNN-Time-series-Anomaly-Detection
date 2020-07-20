@@ -4,6 +4,7 @@ from pathlib import Path
 import pickle
 from shutil import unpack_archive
 import pandas as pd
+import numpy as np
 
 urls = dict()
 """
@@ -62,7 +63,7 @@ for dataname in urls:
                     tokens.append(1.0) if 710 < i < 850 else tokens.append(0.0)
                 elif filepath.name == 'chfdb_chf13_45590.txt':
                     tokens.append(
-                        1.0) if 2800 < i < 2960 else tokens.append(0.0)
+                        1.0) if 2800 < i < 2960 else tokens.append(0.0) 
                 elif filepath.name == 'stdb_308_0.txt':
                     tokens.append(
                         1.0) if 2290 < i < 2550 else tokens.append(0.0)
@@ -218,7 +219,36 @@ with open(str(nyc_taxi_test_path), 'wb') as pkl:
     pickle.dump(labeled_data[13104:], pkl)
 
 
-sensor_path = Path('dataset/pump/raw/sensor.csv')
+dataname = "pump"
+raw_dir = Path('dataset', dataname, 'raw')
+
+sensor_path = Path('data/sensor.csv')
 df = pd.read_csv(sensor_path)
-with open(str('dataset/pump/labeled/sensor' + '.pkl'), 'wb') as pkl:
-    pickle.dump(df, pkl)
+split = int( len(df) * 0.8)
+print(split)
+print(df.head())
+# with open(str('dataset/pump/labeled/sensor' + '.pkl'), 'wb') as pkl:
+#     pickle.dump(df, pkl)
+
+# Divide the labeled dataset into trainset and testset, then save them
+labeled_train_dir = raw_dir.parent.joinpath('labeled', 'train')
+labeled_train_dir.mkdir(parents=True, exist_ok=True)
+labeled_test_dir = raw_dir.parent.joinpath('labeled', 'test')
+labeled_test_dir.mkdir(parents=True, exist_ok=True)
+filepath = 'sensor.csv'
+
+
+df = pd.get_dummies(df, columns=['machine_status'])
+print(df.head(5))
+
+df.drop(columns = ["timestamp", "Unnamed: 0"], inplace = True)  #drop columns
+#df.dropna(inplace = True)
+#df.astype(np.float32)
+
+print(df[:split].values)
+print(df[:split].values.astype(np.float32))
+
+with open(str(labeled_train_dir.joinpath(filepath).with_suffix('.pkl')), 'wb') as pkl:
+    pickle.dump(df[:split].values, pkl)   # just dump the array and not the df
+with open(str(labeled_test_dir.joinpath(filepath).with_suffix('.pkl')), 'wb') as pkl:
+    pickle.dump(df[split:].values, pkl)
