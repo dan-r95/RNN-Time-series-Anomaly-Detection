@@ -206,6 +206,7 @@ with open(str(nyc_taxi_raw_path), 'r') as f:
             14700 < i < 14800 \
             else tokens.append(0)
         labeled_data.append(tokens)
+
 nyc_taxi_train_path = nyc_taxi_raw_path.parent.parent.joinpath(
     'labeled', 'train', nyc_taxi_raw_path.name).with_suffix('.pkl')
 nyc_taxi_train_path.parent.mkdir(parents=True, exist_ok=True)
@@ -237,18 +238,41 @@ labeled_test_dir = raw_dir.parent.joinpath('labeled', 'test')
 labeled_test_dir.mkdir(parents=True, exist_ok=True)
 filepath = 'sensor.csv'
 
+# convert time stamps
+df['timestamp'] =  pd.to_datetime(df['timestamp'], format='%Y-%m-%d %H:%M:%S' ,utc='True')
 
 df = pd.get_dummies(df, columns=['machine_status'])
 print(df.head(5))
 
-df.drop(columns = ["timestamp", "Unnamed: 0"], inplace = True)  #drop columns
+print(df.shape)
+nan_stats = df.isnull().sum().sort_values(ascending = False)/df.shape[0]
+print(nan_stats)
+ 
+df.drop(columns = [ "Unnamed: 0", "sensor_15" , "sensor_50" , "timestamp"], inplace = True)  #drop columns #Remove sensor_15 and sensor_50, too many missing values  #"",
+
+#df = df[['sensor_04', 'sensor_05', 'sensor_11']].copy()
+
+
+# handle missing values by adding mean
+for col in df.columns[1:-1]:
+    df[col] = df[col].fillna(df[col].mean())
+
 #df.dropna(inplace = True)
 #df.astype(np.float32)
 
+"""print(df.head())
+
 print(df[:split].values)
-print(df[:split].values.astype(np.float32))
+print(df[:split].values.astype(np.float32))"""
+
+print(df.dtypes)
 
 with open(str(labeled_train_dir.joinpath(filepath).with_suffix('.pkl')), 'wb') as pkl:
     pickle.dump(df[:split].values, pkl)   # just dump the array and not the df
 with open(str(labeled_test_dir.joinpath(filepath).with_suffix('.pkl')), 'wb') as pkl:
     pickle.dump(df[split:].values, pkl)
+
+
+
+
+#turbofan = 

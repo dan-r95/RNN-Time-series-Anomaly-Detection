@@ -8,6 +8,9 @@ from torch import optim
 from matplotlib import pyplot as plt
 from pathlib import Path
 from anomalyDetector import fit_norm_distribution_param
+from torch.utils.tensorboard import SummaryWriter
+
+
 
 parser = argparse.ArgumentParser(description='PyTorch RNN Prediction Model on Time-series Dataset')
 parser.add_argument('--data', type=str, default='ecg',
@@ -68,6 +71,8 @@ args = parser.parse_args()
 # Set the random seed manually for reproducibility.
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed(args.seed)
+
+writer = SummaryWriter()
 
 ###############################################################################
 # Load data
@@ -226,6 +231,7 @@ def train(args, model, train_dataset,epoch):
             outSeq1 = torch.cat(outVals,dim=0)
             hids1 = torch.cat(hids1,dim=0)
             loss1 = criterion(outSeq1.contiguous().view(args.batch_size,-1), targetSeq.contiguous().view(args.batch_size,-1))
+            writer.add_scalar("Loss1/train", loss1, epoch)
             #loss1 = criterion(outSeq1.view(args.batch_size,-1), targetSeq.view(args.batch_size,-1))
 
             '''Loss2: Teacher forcing loss'''
